@@ -46,3 +46,7 @@
 #txtSearchEmployee {
     min-width: 300px;
 }
+
+.text-red {
+    color: red !important;
+}

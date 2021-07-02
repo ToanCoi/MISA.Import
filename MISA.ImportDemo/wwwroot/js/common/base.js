@@ -215,6 +215,7 @@ class BaseJS {
     }
 
     buildTableHTML(data) {
+        console.log("sdfsd")
         var me = this;
         var columns = $('table thead th');
         $.each(data, function (index, obj) {
@@ -226,7 +227,10 @@ class BaseJS {
             // Lấy thông tin dữ liệu sẽ map tương ứng với các cột:
             $.each(columns, function (index, th) {
                 var td = $(`<td rowspan="1" colspan="1"><div class="cell"></div></td>`);
-                var fieldName = $(th).attr('fieldname');
+                var fieldName = $(th).attr('fieldname'); 
+                if (fieldName == "PositionName" && obj.Position.Description == "New") {
+                    td.addClass("text-red");
+                }
                 var value = obj[fieldName];
                 var formatType = $(th).attr('formatType');
                 switch (formatType) {

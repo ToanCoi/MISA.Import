@@ -478,6 +478,7 @@ namespace MISA.ImportDemo.Core.Services
                             PositionId = Guid.NewGuid(),
                             PositionName = cellValue.ToString(),
                             OrganizationId = _importRepository.GetCurrentOrganization().OrganizationId,
+                            Description = "New",
                         };
                         // Thêm vào danh sách các vị trí sẽ thêm mới:
                         _newPossitons.Add(position);
@@ -487,13 +488,24 @@ namespace MISA.ImportDemo.Core.Services
                     SetCellValueByColumnInsertWhenTableReference(position, columnInsert, ref cellValue);
                     var positionIdProperty = entity.GetType().GetProperty("PositionId");
                     var positionCodeProperty = entity.GetType().GetProperty("PositionCode");
+                    
+                    //NVTOAN 02/07/2021
+                    //Thêm position name, bôi đỏ
+                    var positionNameProperty = entity.GetType().GetProperty("PositionName");
+                    var positionProperty = entity.GetType().GetProperty("Position");
+
+                    if (positionNameProperty != null)
+                        positionNameProperty.SetValue(entity, position.PositionName);
+
+                    if(positionProperty != null)
+                        positionProperty.SetValue(entity, position);
+                    // end
 
                     if (positionIdProperty != null)
                         positionIdProperty.SetValue(entity, position.PositionId);
 
                     if (positionCodeProperty != null)
                         positionCodeProperty.SetValue(entity, position.PositionCode);
-
                     break;
                 default:
                     var listData = _importRepository.GetListObjectByTableName(objectReferenceName).Result;
@@ -636,9 +648,14 @@ namespace MISA.ImportDemo.Core.Services
         protected virtual DateTime? GetProcessDateTimeValue<T>(T entity, object cellValue, Type type, ImportColumn importColumn = null) where T : BaseEntity
         {
             DateTime? dateReturn = null;
-            if (cellValue.GetType() == typeof(double))
-                return DateTime.FromOADate((double)cellValue);
+            
             var dateString = cellValue.ToString();
+            var temp = Regex.Split(dateString, @"/").ToList();
+            while (temp.Count < 3)
+            {
+                temp.Insert(0, "01");
+            }
+            dateString = String.Join('-', temp);
             // Ngày tháng phải nhập theo định dạng (ngày/tháng/năm): 
             // VD hợp lệ: [25.04.2017] [02.04.2017] [2.4.2017] [25/04/2017] [5/12/2017] [15/2/2017] [25-04-2017]  [6-10-2017]  [16-5-2017] [09/26/2000 12:00:00 AM]  [09/26/2000 12:00:00 PM] 
             Regex dateValidRegex = new Regex(@"^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$");
